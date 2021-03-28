@@ -2,6 +2,8 @@ import { resolve } from 'path'
 import type { UserConfig } from 'vite'
 import dotenv from 'dotenv'
 
+console.log('process:::env', process.argv)
+
 // 环境参数
 export const loadEnv =()=> {
   const env = process.env.NODE_ENV;

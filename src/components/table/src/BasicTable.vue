@@ -188,10 +188,12 @@ export default defineComponent({
 
     onMounted( async ()=>{
       refreshTableData()
+      console.log('dddddd')
     })
 
     // 操作事件
     const actionEvent = (record, func) => func({record, props}, refreshTableData)
+    //  const actionEvent=()=>{}
 
     // 分页改变
     const paginationChange = (pagination) => {

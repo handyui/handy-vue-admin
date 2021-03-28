@@ -13,8 +13,7 @@
 import { computed, reactive, toRefs } from "vue"
 import { useStore } from "vuex"
 import logo from '/@/assets/images/logo.png'
-import smallLogo from '/@/assets/images/logo_small.png'
-
+// import smallLogo from '/@/assets/images/logo_small.png'
 
 // 图 标 引 入
 export default {
@@ -24,7 +23,7 @@ export default {
     const theme = computed(()=>getters.theme);
     const state = reactive({
       logo,
-      smallLogo
+      // smallLogo
     })
     return {
       ...toRefs(state),

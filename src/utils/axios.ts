@@ -1,45 +1,69 @@
 import axios from 'axios'
-// import { getToken, setToken } from '~/assets/utils/auth'
-// import { Message, Loading } from 'element-ui'
 
 // import getEnv from './env'
 // console.log(getEnv)
-// console.log(import.meta)
-
+// console.log(import.meta.env.DEV)
 
 import {ACCESS_TOKEN} from '/@/store/mutation-types'
 import {createStorage} from '/@/utils/Storage'
 const Storage = createStorage()
 
-
-// console.log(import.meta.env.MODE)
-// console.log(import.meta.env.PROD)
-// console.log(import.meta.env.DEV)
-
-
-
 class HttpRequest {
+    loading: any
+    data: any
+    atoken: any
+    queue: any
+    cancelDuplicated: boolean
     constructor () {
         this.loading = null
         this.data=null
         this.atoken = null
         // 存储请求队列
-        this.queue = {}
+        this.queue = new Map()
+        this.cancelDuplicated = true
     }
-    // 销毁请求实例
-    distroy (url) {
-        delete this.queue[url]
-        const queue = Object.keys(this.queue)
-        return queue.length
-        // if (!Object.keys(this.queue).length) {
-        //     // this.loading.close()
-        //     console.log('加载关闭...')
-        // }
+    // // 销毁请求实例
+    destroy (url:any) {
+        this.queue.delete(url)
+    }
+    removePendingAjax(config: any){
+        if (!this.cancelDuplicated) return
+
+        const url = [
+            config.method,
+            config.url,
+            JSON.stringify(config.params),
+            JSON.stringify(config.data)
+          ].join('&')
+
+        if( this.queue.has(url)){
+            const cancel = this.queue.get(url)
+            cancel(url)
+            this.destroy (url)
+        }
+    }
+    addPendingAjax(config:any){
+        if (!this.cancelDuplicated) return
+        const url = [
+            config.method,
+            config.url,
+            JSON.stringify(config.params),
+            JSON.stringify(config.data)
+        ].join('&')
+        config.cancelToken = config.cancelToken || new axios.CancelToken((cancel) => {
+            if(!this.queue.has(url)){
+                this.queue.set(url, cancel)
+            }
+        })
     }
     // 请求拦截
-    interceptors (instance, url) {
+    interceptors (instance:any, url:any) {
         // 添加请求拦截器
-        instance.interceptors.request.use(config => {
+        instance.interceptors.request.use((config: any) => {
+            this.removePendingAjax(config)
+            this.addPendingAjax(config)
+            
+            // console.log('this.queue1111=======>', this.queue, this.queue.has(url))
             const token = Storage.get(ACCESS_TOKEN)
             // 判断是否存在token，如果存在的话，请求带上token,后端接口判断请求头有无token
             if (token) {
@@ -67,17 +91,19 @@ class HttpRequest {
                 }
             }
       */
-            this.queue[url] = true
             return config
-        }, error => {
+        }, (error:any) => {
             return Promise.reject(error)
         })
         // 添加响应拦截器
-        instance.interceptors.response.use(res => {
+        instance.interceptors.response.use((res:any) => {
+            // 在请求结束后，移除本次请求
+            this.removePendingAjax(res) 
+
             // 关闭loading
             // this.loading.close()
             const { data } = res
-            this.distroy(url)
+            // this.destroy(url)
             return data
             // if (data.code == '10000') { // token过期
             //     if (!window.isRefreshing) {
@@ -108,32 +134,30 @@ class HttpRequest {
             //     this.distroy(url)
             //     return data
             // }
-        }, error => {
-            this.distroy(url)
-            console.log(error.response)
-            // Message({
-            //     message: '链接超时，请稍候再试',
-            //     type: 'error',
-            //     duration: 5 * 1000
-            // })
-            return Promise.reject(error.response.data)
+        }, (error:any) => {
+            if (axios.isCancel(error)) {
+                console.log('repeated request: ' + error.message)
+              } else {
+                // handle error code
+              }
+              return Promise.reject(error)
         })
     }
 
-    request (options) {
+    request (options:any) {
         this.data = options
         const instance = axios.create({
-            baseURL: process.env.NODE_ENV === 'development' ? '/api/' : 'http://192.168.7.221:80/api', 
+            // baseURL: process.env.NODE_ENV === 'development' ? '/api/' : 'http://b.sayid760.fun/api/', 
+            baseURL: 'http://b.sayid760.fun/api/', 
             timeout: 60000, // request timeout
             // withCredentials: true,
-            // headers: {
-            //     'Content-Type': 'application/json; charset=utf-8',
-            //     'X-URL-PATH': location.pathname
-            // }
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8',
+                // 'X-URL-PATH': location.pathname
+            }
         })
         this.interceptors(instance, options.url)
         options = Object.assign({}, options)
-        this.queue[options.url] = instance
         return instance(options)
     }
 }

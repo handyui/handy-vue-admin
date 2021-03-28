@@ -1,18 +1,18 @@
-// import {get} from '@/utils/request'
+// import {GET} from '@/utils/request'
 
 // //左侧菜单
-// export const getMenuList = () => {
-//   return get('/static/menuList.json')
+// export const GETMenuList = () => {
+//   return GET('/static/menuList.json')
 // }
 
 // //菜单管理列表
-// export const getList = () => {
-//   return get('/static/list.json')
+// export const GETList = () => {
+//   return GET('/static/list.json')
 // }
 import { request } from '/@/utils/api.request'
 
 // 左侧菜单
-// export const getMenuList = (data) => request.post('/sys/menus', data)
+// export const GETMenuList = (data) => request.post('/sys/menus', data)
 
 
 /* 新增菜单
@@ -40,4 +40,4 @@ export const updateMenu = (data) => request.post('/menu/update', data)
 export const deleteMenu = (menuId) => request.get(`/menu/delete/${menuId}`)
 
 // 查询菜单详情
-export const getMenuDetail = (menuId) => request.get(`/menu/detail/${menuId}`)
+export const GETMenuDetail = (menuId) => request.get(`/menu/detail/${menuId}`)

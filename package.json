@@ -12,7 +12,9 @@
     "@ant-design/icons-vue": "^5.1.8",
     "ant-design-vue": "^2.0.0-rc.2",
     "axios": "^0.21.0",
+    "lodash": "^4.17.21",
     "nprogress": "^0.2.0",
+    "very-axios": "^0.1.16",
     "vue": "^3.0.2",
     "vue-router": "^4.0.0-rc.1",
     "vuex": "^4.0.0-beta.4"
